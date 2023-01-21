@@ -1,5 +1,5 @@
 // ** React Imports
-import { useState } from 'react'
+import {useEffect, useState} from 'react'
 
 // ** MUI Imports
 import Step from '@mui/material/Step'
@@ -17,6 +17,8 @@ import StepperCustomDot from 'src/views/forms/form-wizard/StepperCustomDot'
 
 // ** Styled Components
 import StepperWrapper from 'src/@core/styles/mui/stepper'
+import {useRouter} from "next/router";
+import {get} from "lodash";
 
 const steps = [
   {
@@ -36,7 +38,8 @@ const steps = [
 const RegisterMultiSteps = () => {
   // ** States
   const [activeStep, setActiveStep] = useState(0)
-
+  const router = useRouter()
+  console.log(router.query)
   // Handle Stepper
   const handleNext = () => {
     setActiveStep(activeStep + 1)
@@ -64,6 +67,17 @@ const RegisterMultiSteps = () => {
   const renderContent = () => {
     return getStepContent(activeStep)
   }
+
+  useEffect(()=>{
+    if(get(router.query,'token') && get(router.query,'userId')){
+      if(get(router.query,'companyId')){
+        setActiveStep(2)
+      }else{
+        setActiveStep(1)
+      }
+
+    }
+  },[router.query])
 
   return (
     <>

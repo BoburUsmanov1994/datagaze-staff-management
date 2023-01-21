@@ -1,14 +1,14 @@
 // ** React Imports
-import { useEffect } from 'react'
+import {useEffect} from 'react'
 
 // ** Next Import
-import { useRouter } from 'next/router'
+import {useRouter} from 'next/router'
 
 // ** Hooks Import
-import { useAuth } from 'src/hooks/useAuth'
+import {useAuth} from 'src/hooks/useAuth'
 
 const AuthGuard = props => {
-  const { children, fallback } = props
+  const {children, fallback} = props
   const auth = useAuth()
   const router = useRouter()
   useEffect(
@@ -17,10 +17,13 @@ const AuthGuard = props => {
         return
       }
       if (auth.user === null && !window.localStorage.getItem('userData')) {
-        if (router.asPath !== '/') {
+        if (router.asPath !== '/' || router.asPath == '/register') {
+          if (router.asPath == '/register') {
+            router.replace('/register')
+          }
           router.replace({
             pathname: '/login',
-            query: { returnUrl: router.asPath }
+            query: {returnUrl: router.asPath}
           })
         } else {
           router.replace('/login')

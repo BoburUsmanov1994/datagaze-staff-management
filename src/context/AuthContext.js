@@ -10,6 +10,7 @@ import axios from 'axios'
 // ** Config
 import authConfig from 'src/configs/auth'
 import {request} from "../services/api";
+import {get} from "lodash";
 
 // ** Defaults
 const defaultProvider = {
@@ -19,7 +20,8 @@ const defaultProvider = {
   setLoading: () => Boolean,
   login: () => Promise.resolve(),
   logout: () => Promise.resolve(),
-  register: () => Promise.resolve()
+  register: () => Promise.resolve(),
+  checkAuth:() => Promise.resolve(),
 }
 const AuthContext = createContext(defaultProvider)
 
@@ -75,13 +77,15 @@ const AuthProvider = ({children}) => {
       .catch(err => (errorCallback ? errorCallback(err) : null))
   }
 
-  const checkAuth = async () => {
-    const storedToken = window.localStorage.getItem(authConfig.storageTokenKeyName)
-    if (storedToken) {
+  const checkAuth = async (token=null) => {
+    if(token){
       setLoading(true)
       await request
-        .get(authConfig.meEndpoint, {params: {populate: '*'}})
+        .get(authConfig.meEndpoint, {params: {populate: '*'},headers:{Authorization:`Bearer ${token}`}})
         .then(async response => {
+          window.localStorage.setItem('accessToken',token)
+          setUser({...response.data})
+          window.localStorage.setItem('userData', JSON.stringify(response.data))
           setLoading(false)
           setUser({...response.data})
         })
@@ -94,8 +98,39 @@ const AuthProvider = ({children}) => {
             router.replace('/login')
           }
         })
-    } else {
-      setLoading(false)
+    }else {
+      const storedToken = window.localStorage.getItem(authConfig.storageTokenKeyName)
+      if (storedToken) {
+        setLoading(true)
+        await request
+          .get(authConfig.meEndpoint, {params: {populate: '*'}})
+          .then(async response => {
+            setLoading(false)
+            setUser({...response.data})
+            // if(get(response,'data.company')) {
+            //
+            // }else{
+            //   localStorage.removeItem('userData')
+            //   localStorage.removeItem('accessToken')
+            //   setUser(null)
+            //   router.replace({
+            //     pathname: '/register',
+            //     query: {token: storedToken, userId: get(response, 'data.id')}
+            //   })
+            // }
+          })
+          .catch(() => {
+            localStorage.removeItem('userData')
+            localStorage.removeItem('accessToken')
+            setUser(null)
+            setLoading(false)
+            if (authConfig.onTokenExpiration === 'logout' && !router.pathname.includes('login')) {
+              router.replace('/login')
+            }
+          })
+      } else {
+        setLoading(false)
+      }
     }
   }
 
@@ -106,7 +141,8 @@ const AuthProvider = ({children}) => {
     setLoading,
     login: handleLogin,
     logout: handleLogout,
-    register: handleRegister
+    register: handleRegister,
+    checkAuth:checkAuth
   }
 
   return <AuthContext.Provider value={values}>{children}</AuthContext.Provider>

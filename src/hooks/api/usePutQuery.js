@@ -3,7 +3,7 @@ import {useMutation, useQueryClient} from 'react-query'
 import {request} from "../../services/api";
 import {toast} from "react-toastify";
 
-const putRequest = (url, attributes) => request.put(url, attributes);
+const putRequest = (url, attributes,config) => request.put(url, attributes,config);
 
 const usePutQuery = ({hideSuccessToast = false, listKeyId = null}) => {
 
@@ -12,8 +12,8 @@ const usePutQuery = ({hideSuccessToast = false, listKeyId = null}) => {
 
         const {mutate, isLoading, isError, error, isFetching} = useMutation(
             ({
-                 url, attributes
-             }) => putRequest(url, attributes),
+                 url, attributes,config
+             }) => putRequest(url, attributes,config),
             {
                 onSuccess: (data) => {
                     if (!hideSuccessToast) {

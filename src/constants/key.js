@@ -1,4 +1,10 @@
 export const KEYS = {
-    login:"",
-  forgotPassword:"forgotPassword"
+  login: "login",
+  getMe: "getMe",
+  forgotPassword: "forgotPassword",
+  register: "register",
+  company: 'company',
+  companyCategory: 'companyCategory',
+  country: 'country',
+  subscription: 'subscription',
 }
