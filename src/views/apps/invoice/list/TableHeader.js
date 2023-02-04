@@ -10,7 +10,7 @@ import TextField from '@mui/material/TextField'
 
 const TableHeader = props => {
   // ** Props
-  const { value, selectedRows, handleFilter } = props
+  const {value, selectedRows, handleFilter,setShow} = props
 
   return (
     <Box
@@ -28,7 +28,7 @@ const TableHeader = props => {
         size='small'
         displayEmpty
         defaultValue=''
-        sx={{ mr: 4, mb: 2 }}
+        sx={{mr: 4, mb: 2}}
         disabled={selectedRows && selectedRows.length === 0}
         renderValue={selected => (selected.length === 0 ? 'Actions' : selected)}
       >
@@ -37,16 +37,16 @@ const TableHeader = props => {
         <MenuItem value='Edit'>Edit</MenuItem>
         <MenuItem value='Send'>Send</MenuItem>
       </Select>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
+      <Box sx={{display: 'flex', flexWrap: 'wrap', alignItems: 'center'}}>
         <TextField
           size='small'
           value={value}
-          placeholder='Search Invoice'
-          sx={{ mr: 4, mb: 2, maxWidth: '180px' }}
+          placeholder='Search'
+          sx={{mr: 4, mb: 2, maxWidth: '180px'}}
           onChange={e => handleFilter(e.target.value)}
         />
-        <Button sx={{ mb: 2 }} component={Link} variant='contained' href='/apps/invoice/add'>
-          Create Invoice
+        <Button sx={{mb: 2}} onClick={()=>setShow(true)} variant='contained' >
+          Create
         </Button>
       </Box>
     </Box>

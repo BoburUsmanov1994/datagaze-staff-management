@@ -4,7 +4,10 @@ export const URLS = {
   forgotPassword: '/api/auth/forgot-password',
   register: '/api/auth/local/register',
   company: '/api/companies',
-  companyCategory:'/api/company-categories',
-  country:'/api/countries',
-  subscription:'/api/subscribe-types',
+  companyCategory: '/api/company-categories',
+  country: '/api/countries',
+  subscription: '/api/subscribe-types',
+  permits: '/api/permits',
+  docTypes: '/api/doc-types',
+  employee: '/api/employee',
 }

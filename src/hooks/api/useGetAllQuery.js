@@ -4,32 +4,33 @@ import {request} from "../../services/api";
 import {toast} from "react-toastify";
 
 const useGetAllQuery = ({
-                            key = "get-all",
-                            url = "/",
-                            params = {},
-                            showSuccessMsg = false,
-                            hideErrorMsg = false,
-                            enabled = true,
+                          key = "get-all",
+                          url = "/",
+                          params = {},
+                          hideErrorMsg = false,
+                          enabled = true,
                         }) => {
 
-    const {isLoading, isError, data, error, isFetching} = useQuery([key, params], () => request.get(url, params), {
-        onSuccess: () => {
-        },
-        onError: (data) => {
-            if (!hideErrorMsg) {
-                toast.error(data?.response?.data?.message || `ERROR!!! ${url} api not working`)
-            }
-        },
-        enabled
-    });
+  const {isLoading, isError, data, error, isFetching} = useQuery([key, params], () => request.get(url, {
+    params
+  }), {
+    onSuccess: () => {
+    },
+    onError: (data) => {
+      if (!hideErrorMsg) {
+        toast.error(data?.response?.data?.message || `ERROR!!! ${url} api not working`)
+      }
+    },
+    enabled
+  });
 
-    return {
-        isLoading,
-        isError,
-        data,
-        error,
-        isFetching
-    }
+  return {
+    isLoading,
+    isError,
+    data,
+    error,
+    isFetching
+  }
 };
 
 export default useGetAllQuery;

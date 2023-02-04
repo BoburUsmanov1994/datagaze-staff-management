@@ -175,7 +175,7 @@ const StepAccountDetails = ({handleNext}) => {
               {errors.email && <FormHelperText sx={{color: 'error.main'}}>{errors.email.message}</FormHelperText>}
             </FormControl>
           </Grid>
-          {!get(userData, 'data') && <><Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel htmlFor='auth-login-v2-password' error={Boolean(errors.password)}>
                 Password
@@ -245,14 +245,14 @@ const StepAccountDetails = ({handleNext}) => {
                     }
                   />
                 )}
-              />
+              />Attendance
               {errors.repeat_password && (
                 <FormHelperText sx={{color: 'error.main'}} id=''>
                   {errors.repeat_password.message}
                 </FormHelperText>
               )}
             </FormControl>
-          </Grid></>}
+          </Grid>
 
           <Grid item xs={12}>
             <Box sx={{display: 'flex', justifyContent: 'space-between'}}>

@@ -7,4 +7,7 @@ export const KEYS = {
   companyCategory: 'companyCategory',
   country: 'country',
   subscription: 'subscription',
+  permits: 'permits',
+  docTypes: 'docTypes',
+  employee: 'employee',
 }

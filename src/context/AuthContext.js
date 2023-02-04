@@ -106,18 +106,18 @@ const AuthProvider = ({children}) => {
           .get(authConfig.meEndpoint, {params: {populate: '*'}})
           .then(async response => {
             setLoading(false)
-            setUser({...response.data})
-            // if(get(response,'data.company')) {
-            //
-            // }else{
-            //   localStorage.removeItem('userData')
-            //   localStorage.removeItem('accessToken')
-            //   setUser(null)
-            //   router.replace({
-            //     pathname: '/register',
-            //     query: {token: storedToken, userId: get(response, 'data.id')}
-            //   })
-            // }
+
+            if(get(response,'data.company')) {
+              setUser({...response.data})
+            }else{
+              localStorage.removeItem('userData')
+              localStorage.removeItem('accessToken')
+              setUser(null)
+              router.replace({
+                pathname: '/register',
+                query: {token: storedToken, userId: get(response, 'data.id')}
+              })
+            }
           })
           .catch(() => {
             localStorage.removeItem('userData')

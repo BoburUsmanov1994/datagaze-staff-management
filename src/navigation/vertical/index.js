@@ -21,6 +21,11 @@ const navigation = () => {
       path: '/monitoring'
     },
     {
+      title: 'Guest permit',
+      icon: 'mdi:check',
+      path: '/guest-permit'
+    },
+    {
       title: 'Reports',
       icon: 'mdi:file-document-outline',
       children: [
