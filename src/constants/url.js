@@ -9,5 +9,8 @@ export const URLS = {
   subscription: '/api/subscribe-types',
   permits: '/api/permits',
   docTypes: '/api/doc-types',
-  employee: '/api/employee',
+  employee: '/api/employees',
+  computerStatus: '/api/computer-statuses',
+  department: '/api/departments',
+  attandances: '/api/attandances',
 }

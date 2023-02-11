@@ -1,81 +1,39 @@
 // ** React Imports
-import { useState, useEffect, forwardRef } from 'react'
+import {useState} from 'react'
 
 // ** Next Import
 import Link from 'next/link'
 
 // ** MUI Imports
-import Box from '@mui/material/Box'
+
 import Grid from '@mui/material/Grid'
 import Card from '@mui/material/Card'
-import Tooltip from '@mui/material/Tooltip'
-import { styled } from '@mui/material/styles'
+import {styled} from '@mui/material/styles'
 import MenuItem from '@mui/material/MenuItem'
-import TextField from '@mui/material/TextField'
 import CardHeader from '@mui/material/CardHeader'
-import IconButton from '@mui/material/IconButton'
 import InputLabel from '@mui/material/InputLabel'
-import Typography from '@mui/material/Typography'
 import FormControl from '@mui/material/FormControl'
 import CardContent from '@mui/material/CardContent'
-import { DataGrid } from '@mui/x-data-grid'
+import {DataGrid} from '@mui/x-data-grid'
 import Select from '@mui/material/Select'
 
-// ** Icon Imports
-import Icon from 'src/@core/components/icon'
 
-// ** Third Party Imports
-import format from 'date-fns/format'
-import DatePicker from 'react-datepicker'
-
-// ** Store & Actions Imports
-import { useDispatch, useSelector } from 'react-redux'
-import { fetchData, deleteInvoice } from 'src/store/apps/invoice'
-
-// ** Utils Import
-import { getInitials } from 'src/@core/utils/get-initials'
-
-// ** Custom Components Imports
-import CustomChip from 'src/@core/components/mui/chip'
-import CustomAvatar from 'src/@core/components/mui/avatar'
-import OptionsMenu from 'src/@core/components/option-menu'
 import TableHeader from 'src/views/apps/invoice/list/TableHeader'
 
 // ** Styled Components
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
+import {useGetAllQuery} from "../../hooks/api";
+import {KEYS} from "../../constants/key";
+import {URLS} from "../../constants/url";
+import {get} from "lodash";
+import FallbackSpinner from "../../@core/components/spinner";
 
 // ** Styled component for the link in the dataTable
-const StyledLink = styled(Link)(({ theme }) => ({
+const StyledLink = styled(Link)(({theme}) => ({
   textDecoration: 'none',
   color: theme.palette.primary.main
 }))
 
-// ** Vars
-const invoiceStatusObj = {
-  Sent: { color: 'secondary', icon: 'mdi:send' },
-  Paid: { color: 'success', icon: 'mdi:check' },
-  Draft: { color: 'primary', icon: 'mdi:content-save-outline' },
-  'Partial Payment': { color: 'warning', icon: 'mdi:chart-pie' },
-  'Past Due': { color: 'error', icon: 'mdi:information-outline' },
-  Downloaded: { color: 'info', icon: 'mdi:arrow-down' }
-}
-
-// ** renders client column
-const renderClient = row => {
-  if (row.avatar.length) {
-    return <CustomAvatar src={row.avatar} sx={{ mr: 3, width: 34, height: 34 }} />
-  } else {
-    return (
-      <CustomAvatar
-        skin='light'
-        color={row.avatarColor || 'primary'}
-        sx={{ mr: 3, fontSize: '1rem', width: 34, height: 34 }}
-      >
-        {getInitials(row.name || 'John Doe')}
-      </CustomAvatar>
-    )
-  }
-}
 
 const defaultColumns = [
   {
@@ -83,252 +41,120 @@ const defaultColumns = [
     field: 'id',
     minWidth: 80,
     headerName: '#',
-    renderCell: ({ row }) => <StyledLink href={`/apps/invoice/preview/${row.id}`}>{`#${row.id}`}</StyledLink>
-  },
-  {
-    flex: 0.1,
-    minWidth: 80,
-    field: 'invoiceStatus',
-    renderHeader: () => (
-      <Box sx={{ display: 'flex', color: 'action.active' }}>
-        <Icon icon='mdi:trending-up' fontSize={20} />
-      </Box>
-    ),
-    renderCell: ({ row }) => {
-      const { dueDate, balance, invoiceStatus } = row
-      const color = invoiceStatusObj[invoiceStatus] ? invoiceStatusObj[invoiceStatus].color : 'primary'
-
-      return (
-        <Tooltip
-          title={
-            <div>
-              <Typography variant='caption' sx={{ color: 'common.white', fontWeight: 600 }}>
-                {invoiceStatus}
-              </Typography>
-              <br />
-              <Typography variant='caption' sx={{ color: 'common.white', fontWeight: 600 }}>
-                Balance:
-              </Typography>{' '}
-              {balance}
-              <br />
-              <Typography variant='caption' sx={{ color: 'common.white', fontWeight: 600 }}>
-                Due Date:
-              </Typography>{' '}
-              {dueDate}
-            </div>
-          }
-        >
-          <CustomAvatar skin='light' color={color} sx={{ width: 34, height: 34 }}>
-            <Icon icon={invoiceStatusObj[invoiceStatus].icon} fontSize='1.25rem' />
-          </CustomAvatar>
-        </Tooltip>
-      )
-    }
-  },
-  {
-    flex: 0.25,
-    field: 'name',
-    minWidth: 300,
-    headerName: 'Client',
-    renderCell: ({ row }) => {
-      const { name, companyEmail } = row
-
-      return (
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          {renderClient(row)}
-          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography
-              noWrap
-              variant='body2'
-              sx={{ color: 'text.primary', fontWeight: 500, lineHeight: '22px', letterSpacing: '.1px' }}
-            >
-              {name}
-            </Typography>
-            <Typography noWrap variant='caption'>
-              {companyEmail}
-            </Typography>
-          </Box>
-        </Box>
-      )
-    }
-  },
-  {
-    flex: 0.1,
-    minWidth: 90,
-    field: 'total',
-    headerName: 'Total',
-    renderCell: ({ row }) => <Typography variant='body2'>{`$${row.total || 0}`}</Typography>
-  },
-  {
-    flex: 0.15,
-    minWidth: 125,
-    field: 'issuedDate',
-    headerName: 'Issued Date',
-    renderCell: ({ row }) => <Typography variant='body2'>{row.issuedDate}</Typography>
-  },
-  {
-    flex: 0.1,
-    minWidth: 90,
-    field: 'balance',
-    headerName: 'Balance',
-    renderCell: ({ row }) => {
-      return row.balance !== 0 ? (
-        <Typography variant='body2' sx={{ color: 'text.primary' }}>
-          {row.balance}
-        </Typography>
-      ) : (
-        <CustomChip size='small' skin='light' color='success' label='Paid' />
-      )
-    }
+    renderCell: ({row}) => <StyledLink href={`/apps/invoice/preview/${row.id}`}>{`#${row.id}`}</StyledLink>
   }
 ]
-/* eslint-disable */
-const CustomInput = forwardRef((props, ref) => {
-  const startDate = props.start !== null ? format(props.start, 'MM/dd/yyyy') : ''
-  const endDate = props.end !== null ? ` - ${format(props.end, 'MM/dd/yyyy')}` : null
-  const value = `${startDate}${endDate !== null ? endDate : ''}`
-  props.start === null && props.dates.length && props.setDates ? props.setDates([]) : null
-  const updatedProps = { ...props }
-  delete updatedProps.setDates
-  return <TextField fullWidth inputRef={ref} {...updatedProps} label={props.label || ''} value={value} />
-})
+
 
 /* eslint-enable */
 const EmployeeList = () => {
   // ** State
-  const [dates, setDates] = useState([])
-  const [value, setValue] = useState('')
   const [pageSize, setPageSize] = useState(10)
-  const [statusValue, setStatusValue] = useState('')
-  const [endDateRange, setEndDateRange] = useState(null)
   const [selectedRows, setSelectedRows] = useState([])
-  const [startDateRange, setStartDateRange] = useState(null)
+  const [handleFilter, setHandleFilter] = useState({
+    departmentId: undefined,
+    computerStatus: undefined
+  })
 
-  // ** Hooks
-  const dispatch = useDispatch()
-  const store = useSelector(state => state.invoice)
-  useEffect(() => {
-    dispatch(
-      fetchData({
-        dates,
-        q: value,
-        status: statusValue
-      })
-    )
-  }, [dispatch, statusValue, value, dates])
-
-  const handleFilter = val => {
-    setValue(val)
-  }
-
-  const handleStatusValue = e => {
-    setStatusValue(e.target.value)
-  }
-
-  const handleOnChangeRange = dates => {
-    const [start, end] = dates
-    if (start !== null && end !== null) {
-      setDates(dates)
+  const {data, isLoading} = useGetAllQuery({
+    key: KEYS.employee, url: URLS.employee, params: {
+      populate: '*',
+      filters: {
+        department: {
+          id: {
+            $eq: get(handleFilter,'departmentId')
+          }
+        },
+        computerStatus: {
+          id: {
+            $eq: get(handleFilter,'computerStatus')
+          }
+        }
+      }
     }
-    setStartDateRange(start)
-    setEndDateRange(end)
-  }
+  })
+  const {data: departments, isLoading: isLoadingDepartment} = useGetAllQuery({
+    key: KEYS.department, url: URLS.department, params: {
+      populate: '*',
+    }
+  })
+  const {data: computerStatus, isLoading: isLoadingComputerStatus} = useGetAllQuery({
+    key: KEYS.computerStatus, url: URLS.computerStatus, params: {
+      populate: '*',
+    }
+  })
+
 
   const columns = [
-    ...defaultColumns,
-    {
-      flex: 0.1,
-      minWidth: 130,
-      sortable: false,
-      field: 'actions',
-      headerName: 'Actions',
-      renderCell: ({ row }) => (
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Tooltip title='Delete Invoice'>
-            <IconButton size='small' sx={{ mr: 0.5 }} onClick={() => dispatch(deleteInvoice(row.id))}>
-              <Icon icon='mdi:delete-outline' />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title='View'>
-            <IconButton size='small' component={Link} sx={{ mr: 0.5 }} href={`/apps/invoice/preview/${row.id}`}>
-              <Icon icon='mdi:eye-outline' />
-            </IconButton>
-          </Tooltip>
-          <OptionsMenu
-            iconProps={{ fontSize: 20 }}
-            iconButtonProps={{ size: 'small' }}
-            menuProps={{ sx: { '& .MuiMenuItem-root svg': { mr: 2 } } }}
-            options={[
-              {
-                text: 'Download',
-                icon: <Icon icon='mdi:download' fontSize={20} />
-              },
-              {
-                text: 'Edit',
-                href: `/apps/invoice/edit/${row.id}`,
-                icon: <Icon icon='mdi:pencil-outline' fontSize={20} />
-              },
-              {
-                text: 'Duplicate',
-                icon: <Icon icon='mdi:content-copy' fontSize={20} />
-              }
-            ]}
-          />
-        </Box>
-      )
-    }
+    ...defaultColumns
   ]
+
+
+  if (isLoading || isLoadingDepartment || isLoadingComputerStatus) {
+    return <FallbackSpinner/>;
+  }
 
   return (
     <DatePickerWrapper>
       <Grid container spacing={6}>
         <Grid item xs={12}>
           <Card>
-            <CardHeader title='Filters' />
+            <CardHeader title='Filters'/>
             <CardContent>
               <Grid container spacing={6}>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={4} sm={4}>
                   <FormControl fullWidth>
-                    <InputLabel id='invoice-status-select'>Invoice Status</InputLabel>
-
+                    <InputLabel id='invoice-status-select'>Select department</InputLabel>
                     <Select
                       fullWidth
-                      value={statusValue}
-                      sx={{ mr: 4, mb: 2 }}
-                      label='Invoice Status'
-                      onChange={handleStatusValue}
-                      labelId='invoice-status-select'
+                      value={get(handleFilter, 'departmentId')}
+                      sx={{mr: 4, mb: 2}}
+                      label='Select department'
+                      onChange={(e) => setHandleFilter(prev => ({...prev, departmentId: e.target.value}))}
+                      labelId='department-status-select'
                     >
                       <MenuItem value=''>none</MenuItem>
-                      <MenuItem value='downloaded'>Downloaded</MenuItem>
-                      <MenuItem value='draft'>Draft</MenuItem>
-                      <MenuItem value='paid'>Paid</MenuItem>
-                      <MenuItem value='past due'>Past Due</MenuItem>
-                      <MenuItem value='partial payment'>Partial Payment</MenuItem>
+                      {
+                        get(departments, 'data.results', []).map(item => <MenuItem key={get(item, 'id')}
+                                                                                   value={get(item, 'id')}>{get(item, 'name')}</MenuItem>)
+                      }
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <DatePicker
-                    isClearable
-                    selectsRange
-                    monthsShown={2}
-                    endDate={endDateRange}
-                    selected={startDateRange}
-                    startDate={startDateRange}
-                    shouldCloseOnSelect={false}
-                    id='date-range-picker-months'
-                    onChange={handleOnChangeRange}
-                    customInput={
-                      <CustomInput
-                        dates={dates}
-                        setDates={setDates}
-                        label='Invoice Date'
-                        end={endDateRange}
-                        start={startDateRange}
-                      />
-                    }
-                  />
+                <Grid item xs={4} sm={4}>
+                  <FormControl fullWidth>
+                    <InputLabel id='office-status-select'>In office</InputLabel>
+                    <Select
+                      fullWidth
+                      value={''}
+                      sx={{mr: 4, mb: 2}}
+                      label='Select office'
+                      onChange={(e) => console.log(e)}
+                      labelId='office-status-select'
+                    >
+                      <MenuItem value=''>none</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={4} sm={4}>
+                  <FormControl fullWidth>
+                    <InputLabel id='computer-status-select'>Computer status</InputLabel>
+
+                    <Select
+                      fullWidth
+                      value={get(handleFilter, 'computerStatus')}
+                      sx={{mr: 4, mb: 2}}
+                      label='Select status'
+                      onChange={(e) => setHandleFilter(prev => ({...prev, computerStatus: e.target.value}))}
+                      labelId='computer-status-select'
+                    >
+                      <MenuItem value=''>none</MenuItem>
+                      {
+                        get(computerStatus, 'data.results', []).map(item => <MenuItem key={get(item, 'id')}
+                                                                                      value={get(item, 'id')}>{get(item, 'name')}</MenuItem>)
+                      }
+                    </Select>
+                  </FormControl>
                 </Grid>
               </Grid>
             </CardContent>
@@ -336,11 +162,11 @@ const EmployeeList = () => {
         </Grid>
         <Grid item xs={12}>
           <Card>
-            <TableHeader value={value} selectedRows={selectedRows} handleFilter={handleFilter} />
+            <TableHeader value={''} selectedRows={selectedRows} handleFilter={handleFilter}/>
             <DataGrid
               autoHeight
               pagination
-              rows={store.data}
+              rows={get(data, 'data.results', [])}
               columns={columns}
               checkboxSelection
               disableSelectionOnClick

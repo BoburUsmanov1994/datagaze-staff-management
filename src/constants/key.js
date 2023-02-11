@@ -10,4 +10,7 @@ export const KEYS = {
   permits: 'permits',
   docTypes: 'docTypes',
   employee: 'employee',
+  computerStatus: 'computerStatus',
+  department: 'department',
+  attandances: 'attandances',
 }

@@ -7,10 +7,11 @@ import Button from '@mui/material/Button'
 import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import TextField from '@mui/material/TextField'
+import {isNil} from "lodash"
 
 const TableHeader = props => {
   // ** Props
-  const {value, selectedRows, handleFilter,setShow} = props
+  const {value, selectedRows, handleFilter, setShow = null} = props
 
   return (
     <Box
@@ -45,9 +46,9 @@ const TableHeader = props => {
           sx={{mr: 4, mb: 2, maxWidth: '180px'}}
           onChange={e => handleFilter(e.target.value)}
         />
-        <Button sx={{mb: 2}} onClick={()=>setShow(true)} variant='contained' >
+        {!isNil(setShow) && <Button sx={{mb: 2}} onClick={() => setShow(true)} variant='contained'>
           Create
-        </Button>
+        </Button>}
       </Box>
     </Box>
   )
