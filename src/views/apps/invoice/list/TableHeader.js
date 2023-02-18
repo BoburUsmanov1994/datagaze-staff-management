@@ -8,11 +8,17 @@ import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import TextField from '@mui/material/TextField'
 import {isNil} from "lodash"
+import {useForm} from "react-hook-form";
+import {useState} from "react";
 
 const TableHeader = props => {
-  // ** Props
   const {value, selectedRows, handleFilter, setShow = null} = props
+  const [search, setSearch] = useState(value)
+  const {handleSubmit} = useForm()
 
+  const onSubmit = () => {
+    handleFilter(search)
+  }
   return (
     <Box
       sx={{
@@ -39,13 +45,15 @@ const TableHeader = props => {
         <MenuItem value='Send'>Send</MenuItem>
       </Select>
       <Box sx={{display: 'flex', flexWrap: 'wrap', alignItems: 'center'}}>
-        <TextField
-          size='small'
-          value={value}
-          placeholder='Search'
-          sx={{mr: 4, mb: 2, maxWidth: '180px'}}
-          onChange={e => handleFilter(e.target.value)}
-        />
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <TextField
+            size='small'
+            value={search}
+            placeholder='Search'
+            sx={{mr: 4, mb: 2, maxWidth: '180px'}}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </form>
         {!isNil(setShow) && <Button sx={{mb: 2}} onClick={() => setShow(true)} variant='contained'>
           Create
         </Button>}

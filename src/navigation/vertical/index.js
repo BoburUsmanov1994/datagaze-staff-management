@@ -15,36 +15,41 @@ const navigation = () => {
       icon: 'mdi:chart-bar',
       path: '/attendance'
     },
-    {
-      title: 'Monitoring',
-      icon: 'mdi:monitor',
-      path: '/monitoring'
-    },
+    // {
+    //   title: 'Monitoring',
+    //   icon: 'mdi:monitor',
+    //   path: '/monitoring'
+    // },
     {
       title: 'Guest permit',
       icon: 'mdi:check',
       path: '/guest-permit'
     },
     {
-      title: 'Reports',
-      icon: 'mdi:file-document-outline',
-      children: [
-        {
-          title: 'Reports',
-          path: '/reports'
-        },
-        ]
+      title: 'Hikvision',
+      icon: 'mdi:visibility',
+      path: '/hikvision'
     },
-    {
-      title: 'Settings',
-      icon: 'mdi:cog-outline',
-      children: [
-        {
-          title: 'Settings',
-          path: '/settings'
-        },
-      ]
-    },
+    // {
+    //   title: 'Reports',
+    //   icon: 'mdi:file-document-outline',
+    //   children: [
+    //     {
+    //       title: 'Reports',
+    //       path: '/reports'
+    //     },
+    //   ]
+    // },
+    // {
+    //   title: 'Settings',
+    //   icon: 'mdi:cog-outline',
+    //   children: [
+    //     {
+    //       title: 'Settings',
+    //       path: '/settings'
+    //     },
+    //   ]
+    // },
     // {
     //   title: 'Chat',
     //   icon: 'mdi:message-outline',

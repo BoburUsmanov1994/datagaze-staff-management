@@ -13,4 +13,6 @@ export const KEYS = {
   computerStatus: 'computerStatus',
   department: 'department',
   attandances: 'attandances',
+  hikvision: 'hikvision',
+  employeeType: 'employeeType',
 }

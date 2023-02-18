@@ -13,4 +13,7 @@ export const URLS = {
   computerStatus: '/api/computer-statuses',
   department: '/api/departments',
   attandances: '/api/attandances',
+  hikvision: '/api/hikvisions',
+  employeeType: '/api/employee-types',
+  assignHikvision: '/api/hikvision/user/create',
 }

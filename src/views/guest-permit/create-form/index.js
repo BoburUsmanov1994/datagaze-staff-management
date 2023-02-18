@@ -23,25 +23,21 @@ import {useForm, Controller} from 'react-hook-form'
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
 
-// ** Store Imports
-import {useDispatch} from 'react-redux'
 
 // ** Actions Imports
-import {addUser} from 'src/store/apps/user'
 import DatePicker from "react-datepicker";
 import PickersCustomInput from "../../forms/form-elements/pickers/PickersCustomInput";
 import DatePickerWrapper from "../../../@core/styles/libs/react-datepicker";
-import CleaveWrapper from "../../../@core/styles/libs/react-cleave";
-import Cleave from 'cleave.js/react'
 import 'cleave.js/dist/addons/cleave-phone.us'
 import {FormControlLabel, Switch} from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import {get} from "lodash";
-import Grid from "@mui/material/Grid";
 import {useGetAllQuery, usePostQuery} from "../../../hooks/api";
 import {KEYS} from "../../../constants/key";
 import {URLS} from "../../../constants/url";
 import CircularProgress from "@mui/material/CircularProgress";
+import {toast} from "react-toastify";
+import dayjs from "dayjs";
 
 
 const Header = styled(Box)(({theme}) => ({
@@ -55,6 +51,9 @@ const Header = styled(Box)(({theme}) => ({
 const schema = yup.object().shape({
   guestName: yup.string().required(),
   visitPurpose: yup.string().required(),
+  employeeType: yup.string().required(),
+  hikvision: yup.string().required(),
+  responsiblePerson: yup.string().required(),
 })
 
 const defaultValues = {
@@ -67,8 +66,7 @@ const CreateForm = props => {
   // ** Props
   const {open, toggle} = props
 
-  const [checkInDateTime, setCheckInDateTime] = useState(new Date())
-  const [checkOutDateTime, setCheckOutDateTime] = useState(new Date())
+  const [startDate, setStartDate] = useState(new Date())
   const [expireDateTime, setExpireDateTime] = useState(new Date())
   const [oneTime, setOneTime] = useState(false)
   const {data: docTypes, isLoading: isLoadingDocTypes} = useGetAllQuery({
@@ -95,9 +93,33 @@ const CreateForm = props => {
       },
     }
   )
-
+  const {data: employeeType, isLoading: isLoadingEmployeeType} = useGetAllQuery({
+      key: KEYS.employeeType, url: URLS.employeeType, params: {
+        params: {
+          populate: '*'
+        },
+      },
+    }
+  )
+  const {data: devices, isLoading: isLoadingDevice} = useGetAllQuery({
+      key: KEYS.hikvision, url: URLS.hikvision, params: {
+        params: {
+          populate: '*'
+        },
+      },
+    }
+  )
   const {mutate: create, isLoading: isLoadingPost} = usePostQuery({
     listKeyId: KEYS.permits,
+    hideSuccessToast: true
+  })
+
+  const {mutate: createEmployee, isLoading: isLoadingPostEmployee} = usePostQuery({
+    listKeyId: KEYS.employee,
+    hideSuccessToast: true
+  })
+  const {mutate: createDevice, isLoading: isLoadingPostDevice} = usePostQuery({
+    listKeyId: KEYS.employee,
     hideSuccessToast: true
   })
 
@@ -105,7 +127,6 @@ const CreateForm = props => {
   const {
     reset,
     control,
-    setValue,
     handleSubmit,
     formState: {errors}
   } = useForm({
@@ -115,24 +136,63 @@ const CreateForm = props => {
   })
 
   const onSubmit = data => {
-    create({
-      url: URLS.permits,
+    createEmployee({
+      url: URLS.employee,
       attributes: {
         data: {
-          ...data
+          firstName: get(data, 'guestName'),
+          employee_type: get(data, 'employeeType'),
         }
-      },
+      }
     }, {
-      onSuccess: ({data}) => {
-        toggle()
-        reset()
+      onSuccess: ({data: {data: {id}}}) => {
+        createDevice({
+            url: URLS.assignHikvision,
+            attributes: {
+              employeeId: id,
+              hikvisionId: get(data, 'hikvision'),
+              beginTime: startDate,
+              endTime: expireDateTime,
+            }
+          },
+          {
+            onSuccess: ({...rest}) => {
+              create({
+                url: URLS.permits,
+                attributes: {
+                  data: {
+                    ...data,
+                    employee: id,
+                    startDate,
+                    expiredDate: expireDateTime,
+                  }
+                },
+              }, {
+                onSuccess: () => {
+                  toast.success(e?.data?.message || 'SUCCESS')
+                  handleClose()
+                },
+                onError: (e) => {
+                  toast.error(e?.data?.message || 'ERROR')
+                  handleClose()
+                }
+              })
+            },
+            onError: (e) => {
+              toast.error(e?.data?.message || 'ERROR')
+              handleClose()
+            }
+          }
+        )
       },
       onError: (e) => {
-        toggle()
-        reset()
+        toast.error(e?.data?.message || 'ERROR')
+        handleClose()
       }
     })
+
   }
+
 
   const handleClose = () => {
     toggle()
@@ -148,7 +208,8 @@ const CreateForm = props => {
       ModalProps={{keepMounted: true}}
       sx={{'& .MuiDrawer-paper': {width: {xs: 300, sm: 400}}}}
     >
-      {(isLoadingPost || isLoadingDocTypes || isLoadingCompany || isLoadingEmployee) && <div style={{
+      {(isLoadingPost || isLoadingDocTypes || isLoadingCompany || isLoadingEmployee || isLoadingPostEmployee || isLoadingEmployeeType || isLoadingDevice || isLoadingPostDevice) &&
+      <div style={{
         position: 'absolute',
         zIndex: '9999',
         top: '50%',
@@ -214,29 +275,16 @@ const CreateForm = props => {
               showTimeSelect
               timeFormat='HH:mm'
               timeIntervals={15}
-              selected={checkInDateTime}
+              selected={startDate}
               id='date-time-picker'
               dateFormat='MM/dd/yyyy h:mm aa'
               popperPlacement={'bottom-end'}
-              onChange={date => setCheckInDateTime(date)}
+              onChange={date => setStartDate(date)}
               customInput={<PickersCustomInput label='Check in time'/>
               }
             />
           </DatePickerWrapper>
-          <DatePickerWrapper sx={{mb: 6}}>
-            <DatePicker
-              showTimeSelect
-              timeFormat='HH:mm'
-              timeIntervals={15}
-              selected={checkOutDateTime}
-              id='date-time-picker'
-              dateFormat='MM/dd/yyyy h:mm aa'
-              popperPlacement={'bottom-end'}
-              onChange={date => setCheckOutDateTime(date)}
-              customInput={<PickersCustomInput label='Check out time'/>
-              }
-            />
-          </DatePickerWrapper>
+
 
           <DatePickerWrapper sx={{mb: 6}}>
             <DatePicker
@@ -347,39 +395,109 @@ const CreateForm = props => {
           <FormControl fullWidth sx={{mb: 6}}>
             <InputLabel
               id='validation-basic-select4'
-              error={Boolean(errors.employee)}
+              error={Boolean(errors.responsiblePerson)}
               htmlFor='validation-basic-select4'
             >
-              Employee
+              Responsible person
             </InputLabel>
             <Controller
-              name='employee'
+              name='responsiblePerson'
               control={control}
               rules={{required: true}}
               render={({field: {value, onChange}}) => (
                 <Select
                   value={value}
-                  label='Employee'
+                  label='Responsible person'
                   onChange={onChange}
-                  error={Boolean(errors.employee)}
+                  error={Boolean(errors.responsiblePerson)}
                   labelId='validation-basic-select4'
                   aria-describedby='validation-basic-select4'
                 >
                   {
                     get(employee, 'data.results', []).map(item => <MenuItem key={get(item, 'id')} value={
                       get(item, "id")
-                    }>{get(item, "name")}</MenuItem>)
+                    }>{get(item, "firstName")}</MenuItem>)
                   }
                 </Select>
               )}
             />
-            {errors.employee && (
+            {errors.responsiblePerson && (
               <FormHelperText sx={{color: 'error.main'}} id='validation-basic-select4'>
                 field is required
               </FormHelperText>
             )}
           </FormControl>
+          <FormControl fullWidth sx={{mb: 6}}>
+            <InputLabel
+              id='validation-basic-select5'
+              error={Boolean(errors.employeeType)}
+              htmlFor='validation-basic-select5'
+            >
+              Employee type
+            </InputLabel>
+            <Controller
+              name='employeeType'
+              control={control}
+              rules={{required: true}}
+              render={({field: {value, onChange}}) => (
+                <Select
+                  value={value}
+                  label='Employee type'
+                  onChange={onChange}
+                  error={Boolean(errors.employeeType)}
+                  labelId='validation-basic-select5'
+                  aria-describedby='validation-basic-select5'
+                >
+                  {
+                    get(employeeType, 'data.data', []).map(item => <MenuItem key={get(item, 'id')} value={
+                      get(item, "id")
+                    }>{get(item, "attributes.name")}</MenuItem>)
+                  }
+                </Select>
+              )}
+            />
+            {errors.employeeType && (
+              <FormHelperText sx={{color: 'error.main'}} id='validation-basic-select5'>
+                field is required
+              </FormHelperText>
+            )}
+          </FormControl>
 
+          <FormControl fullWidth sx={{mb: 6}}>
+            <InputLabel
+              id='validation-basic-select6'
+              error={Boolean(errors.hikvision)}
+              htmlFor='validation-basic-select6'
+            >
+              Device
+            </InputLabel>
+            <Controller
+              name='hikvision'
+              control={control}
+              rules={{required: true}}
+              render={({field: {value, onChange}}) => (
+                <Select
+                  value={value}
+                  label='Device'
+                  onChange={onChange}
+                  error={Boolean(errors.hikvision)}
+                  labelId='validation-basic-select6'
+                  aria-describedby='validation-basic-select6'
+                >
+                  {
+                    get(devices, 'data.results', []).map(item => <MenuItem key={get(item, 'id')} value={
+                      get(item, "id")
+                    }>{`${get(item, "name")}(${get(item, "ip")})`}</MenuItem>)
+                  }
+                </Select>
+              )}
+            />
+            {errors.hikvision && (
+              <FormHelperText sx={{color: 'error.main'}} id='validation-basic-select6'>
+                field is required
+              </FormHelperText>
+            )}
+          </FormControl>
 
           <Box sx={{display: 'flex', alignItems: 'center'}}>
             <Button size='large' type='submit' variant='contained' sx={{mr: 3}}>

@@ -15,7 +15,6 @@ import TextField from '@mui/material/TextField'
 import CardHeader from '@mui/material/CardHeader'
 import IconButton from '@mui/material/IconButton'
 import InputLabel from '@mui/material/InputLabel'
-import Typography from '@mui/material/Typography'
 import FormControl from '@mui/material/FormControl'
 import CardContent from '@mui/material/CardContent'
 import {DataGrid} from '@mui/x-data-grid'
@@ -28,37 +27,26 @@ import Icon from 'src/@core/components/icon'
 import format from 'date-fns/format'
 import DatePicker from 'react-datepicker'
 
-// ** Store & Actions Imports
-import {useDispatch, useSelector} from 'react-redux'
-import {fetchData, deleteInvoice} from 'src/store/apps/invoice'
 
-
-import OptionsMenu from 'src/@core/components/option-menu'
 import TableHeader from 'src/views/apps/invoice/list/TableHeader'
 
-// ** Styled Components
-import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
-import {useGetAllQuery} from "../../hooks/api";
+import {useDeleteQuery, useGetAllQuery} from "../../hooks/api";
 import {KEYS} from "../../constants/key";
 import {URLS} from "../../constants/url";
 import FallbackSpinner from "../../@core/components/spinner";
-import {get} from "lodash";
+import {get, isNil} from "lodash";
 import dayjs from "dayjs";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import Button from "@mui/material/Button";
-import Fade from "@mui/material/Fade";
 import GuestPermitCreateForm from "../../views/guest-permit/create-form"
+import CircularProgress from "@mui/material/CircularProgress";
+import Typography from "@mui/material/Typography";
+import {PDFDownloadLink} from '@react-pdf/renderer';
+import Pdf from "../../components/pdf";
+import QRGenerator from "../../components/qrcode";
 
 const StyledLink = styled(Link)(({theme}) => ({
   textDecoration: 'none',
   color: theme.palette.primary.main
 }))
-
-const Transition = forwardRef(function Transition(props, ref) {
-  return <Fade ref={ref} {...props} />
-})
 
 
 const defaultColumns = [
@@ -87,7 +75,7 @@ const defaultColumns = [
     minWidth: 90,
     field: 'company',
     headerName: 'Company',
-    renderCell: ({row}) =>get(row,'company.name','-')
+    renderCell: ({row}) => get(row, 'company.name', '-')
   },
   {
     flex: 0.15,
@@ -120,13 +108,14 @@ const CustomInput = forwardRef((props, ref) => {
 const GuestList = () => {
   // ** State
   const [dates, setDates] = useState([])
-  const [value, setValue] = useState('')
   const [pageSize, setPageSize] = useState(10)
   const [companyValue, setCompanyValue] = useState(undefined)
   const [endDateRange, setEndDateRange] = useState(null)
   const [selectedRows, setSelectedRows] = useState([])
   const [startDateRange, setStartDateRange] = useState(null)
   const [show, setShow] = useState(false)
+  const [search, setSearch] = useState('')
+  const [id, setId] = useState(null)
 
 
   const {data, isLoading} = useGetAllQuery({
@@ -137,6 +126,9 @@ const GuestList = () => {
           id: {
             $eq: companyValue
           }
+        },
+        guestName: {
+          $startsWith: search
         }
       }
     }
@@ -145,10 +137,8 @@ const GuestList = () => {
     key: KEYS.company, url: URLS.company
   })
 
+  const {mutate: deleteRequest, isLoading: deleteLoading} = useDeleteQuery({listKeyId: KEYS.permits})
 
-  const handleFilter = val => {
-    setValue(val)
-  }
 
   const handleCompanyValue = e => {
     setCompanyValue(e.target.value)
@@ -166,6 +156,10 @@ const GuestList = () => {
   const columns = [
     ...defaultColumns,
     {
+      renderCell: ({row}) => <QRGenerator small id={get(row, 'id')}
+                                          value={!isNil(get(row, 'qrCode')) ? get(row, 'qrCode') : get(row, 'id')}/>
+    },
+    {
       flex: 0.1,
       minWidth: 130,
       sortable: false,
@@ -173,119 +167,130 @@ const GuestList = () => {
       headerName: 'Actions',
       renderCell: ({row}) => (
         <Box sx={{display: 'flex', alignItems: 'center'}}>
-          <Tooltip title='Delete Invoice'>
-            <IconButton size='small' sx={{mr: 0.5}} >
+          <Tooltip title='Delete'>
+            <IconButton onClick={() => deleteItem(get(row, 'id'))} size='small' sx={{mr: 0.5}}>
               <Icon icon='mdi:delete-outline'/>
             </IconButton>
           </Tooltip>
-          <Tooltip title='View'>
-            <IconButton size='small' component={Link} sx={{mr: 0.5}} href={`#`}>
-              <Icon icon='mdi:eye-outline'/>
+          <Tooltip title='Update'>
+            <IconButton onClick={() => setId(get(row, 'id'))} size='small' sx={{mr: 0.5}}>
+              <Icon icon='mdi:edit'/>
             </IconButton>
           </Tooltip>
-          <OptionsMenu
-            iconProps={{fontSize: 20}}
-            iconButtonProps={{size: 'small'}}
-            menuProps={{sx: {'& .MuiMenuItem-root svg': {mr: 2}}}}
-            options={[
-              {
-                text: 'Download',
-                icon: <Icon icon='mdi:download' fontSize={20}/>
-              },
-              {
-                text: 'Edit',
-                href: `#`,
-                icon: <Icon icon='mdi:pencil-outline' fontSize={20}/>
-              },
-              {
-                text: 'Duplicate',
-                icon: <Icon icon='mdi:content-copy' fontSize={20}/>
-              }
-            ]}
-          />
+          <Tooltip title='Pdf'>
+
+            <PDFDownloadLink document={<Pdf data={row}/>} fileName={`qrcode.pdf`}>
+              {({blob, url, loading, error}) => <IconButton size='small' sx={{mr: 0.5}}>
+                <Icon icon='mdi:file'/>
+              </IconButton>}
+            </PDFDownloadLink>
+
+          </Tooltip>
         </Box>
       )
     }
   ]
 
+  const deleteItem = (id) => {
+    deleteRequest({
+      url: `${URLS.permits}/${id}`
+    })
+  }
 
   if (isLoading || isLoadingCompany) {
     return <FallbackSpinner/>;
   }
 
   return (
+    <Grid container spacing={6}>
+      {(deleteLoading) && <div style={{
+        position: 'absolute',
+        zIndex: '9999',
+        top: '50%',
+        height: '100vh',
+        width: '100%',
+        left: '50%',
+        transform: 'translate(-50%,-50%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(255,255,255,0.35)'
+      }}>
+        <Box sx={{mt: 6, display: 'flex', alignItems: 'center', flexDirection: 'column'}}>
+          <CircularProgress sx={{mb: 4}}/>
+          <Typography>Loading...</Typography>
+        </Box>
+      </div>}
+      <Grid item xs={12}>
 
-
-      <Grid container spacing={6}>
-        <Grid item xs={12}>
-          <Card>
-            <CardHeader title='Filters'/>
-            <CardContent>
-              <Grid container spacing={6}>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth>
-                    <InputLabel id='invoice-status-select'>Company</InputLabel>
-                    <Select
-                      fullWidth
-                      value={companyValue}
-                      sx={{mr: 4, mb: 2}}
-                      label='Invoice Status'
-                      onChange={handleCompanyValue}
-                      labelId='invoice-status-select'
-                    >
-                      <MenuItem value={''}>None</MenuItem>
-                      {
-                        get(company, 'data.results', []).map(item => <MenuItem key={get(item, 'id')}
-                                                                               value={get(item, 'id')}>{get(item, 'name')}</MenuItem>)
-                      }
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <DatePicker
-                    isClearable
-                    selectsRange
-                    monthsShown={2}
-                    endDate={endDateRange}
-                    selected={startDateRange}
-                    startDate={startDateRange}
-                    shouldCloseOnSelect={false}
-                    id='date-range-picker-months'
-                    onChange={handleOnChangeRange}
-                    customInput={
-                      <CustomInput
-                        dates={dates}
-                        setDates={setDates}
-                        label='Invoice Date'
-                        end={endDateRange}
-                        start={startDateRange}
-                      />
+        <Card>
+          <CardHeader title='Filters'/>
+          <CardContent>
+            <Grid container spacing={6}>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel id='invoice-status-select'>Company</InputLabel>
+                  <Select
+                    fullWidth
+                    value={companyValue}
+                    sx={{mr: 4, mb: 2}}
+                    label='Status'
+                    onChange={handleCompanyValue}
+                    labelId='invoice-status-select'
+                  >
+                    <MenuItem value={''}>None</MenuItem>
+                    {
+                      get(company, 'data.results', []).map(item => <MenuItem key={get(item, 'id')}
+                                                                             value={get(item, 'id')}>{get(item, 'name')}</MenuItem>)
                     }
-                  />
-                </Grid>
+                  </Select>
+                </FormControl>
               </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12}>
-          <Card>
-            <TableHeader setShow={setShow} value={value} selectedRows={selectedRows} handleFilter={handleFilter}/>
-            <DataGrid
-              autoHeight
-              pagination
-              rows={get(data, 'data.results', [])}
-              columns={columns}
-              checkboxSelection
-              disableSelectionOnClick
-              pageSize={Number(pageSize)}
-              rowsPerPageOptions={[10, 25, 50]}
-              onSelectionModelChange={rows => setSelectedRows(rows)}
-              onPageSizeChange={newPageSize => setPageSize(newPageSize)}
-            />
-          </Card>
-        </Grid>
-        <GuestPermitCreateForm open={show} toggle={setShow}/>
+              <Grid item xs={12} sm={6}>
+                <DatePicker
+                  isClearable
+                  selectsRange
+                  monthsShown={2}
+                  endDate={endDateRange}
+                  selected={startDateRange}
+                  startDate={startDateRange}
+                  shouldCloseOnSelect={false}
+                  id='date-range-picker-months'
+                  onChange={handleOnChangeRange}
+                  customInput={
+                    <CustomInput
+                      dates={dates}
+                      setDates={setDates}
+                      label='Date'
+                      end={endDateRange}
+                      start={startDateRange}
+                    />
+                  }
+                />
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
       </Grid>
+      <Grid item xs={12}>
+        <Card>
+          <TableHeader setShow={setShow} value={search} selectedRows={selectedRows} handleFilter={setSearch}/>
+          <DataGrid
+            autoHeight
+            pagination
+            rows={get(data, 'data.results', [])}
+            columns={columns}
+            checkboxSelection
+            disableSelectionOnClick
+            pageSize={Number(pageSize)}
+            rowsPerPageOptions={[10, 25, 50]}
+            onSelectionModelChange={rows => setSelectedRows(rows)}
+            onPageSizeChange={newPageSize => setPageSize(newPageSize)}
+          />
+        </Card>
+      </Grid>
+      <GuestPermitCreateForm open={show} toggle={setShow}/>
+    </Grid>
 
   )
 }
