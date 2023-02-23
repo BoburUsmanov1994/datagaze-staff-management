@@ -8,7 +8,7 @@ function QRGenerator(props) {
       <QRCode
         id={id}
         value={value}
-        size={small ? 50 : 100}
+        size={256}
         bgColor="#FFF"
         fgColor="#000"
         includeMargin

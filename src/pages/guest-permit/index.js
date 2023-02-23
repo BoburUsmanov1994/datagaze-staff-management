@@ -156,10 +156,6 @@ const GuestList = () => {
   const columns = [
     ...defaultColumns,
     {
-      renderCell: ({row}) => <QRGenerator small id={get(row, 'id')}
-                                          value={!isNil(get(row, 'qrCode')) ? get(row, 'qrCode') : get(row, 'id')}/>
-    },
-    {
       flex: 0.1,
       minWidth: 130,
       sortable: false,
@@ -167,6 +163,8 @@ const GuestList = () => {
       headerName: 'Actions',
       renderCell: ({row}) => (
         <Box sx={{display: 'flex', alignItems: 'center'}}>
+          <div style={{display:'none'}} ><QRGenerator small id={get(row, 'id')}
+                                                      value={!isNil(get(row, 'qrCode')) ? get(row, 'qrCode') : get(row, 'id','#')}/></div>
           <Tooltip title='Delete'>
             <IconButton onClick={() => deleteItem(get(row, 'id'))} size='small' sx={{mr: 0.5}}>
               <Icon icon='mdi:delete-outline'/>
@@ -178,6 +176,7 @@ const GuestList = () => {
             </IconButton>
           </Tooltip>
           <Tooltip title='Pdf'>
+
 
             <PDFDownloadLink document={<Pdf data={row}/>} fileName={`qrcode.pdf`}>
               {({blob, url, loading, error}) => <IconButton size='small' sx={{mr: 0.5}}>
@@ -247,26 +246,26 @@ const GuestList = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <DatePicker
-                  isClearable
-                  selectsRange
-                  monthsShown={2}
-                  endDate={endDateRange}
-                  selected={startDateRange}
-                  startDate={startDateRange}
-                  shouldCloseOnSelect={false}
-                  id='date-range-picker-months'
-                  onChange={handleOnChangeRange}
-                  customInput={
-                    <CustomInput
-                      dates={dates}
-                      setDates={setDates}
-                      label='Date'
-                      end={endDateRange}
-                      start={startDateRange}
-                    />
-                  }
-                />
+                {/*<DatePicker*/}
+                {/*  isClearable*/}
+                {/*  selectsRange*/}
+                {/*  monthsShown={2}*/}
+                {/*  endDate={endDateRange}*/}
+                {/*  selected={startDateRange}*/}
+                {/*  startDate={startDateRange}*/}
+                {/*  shouldCloseOnSelect={false}*/}
+                {/*  id='date-range-picker-months'*/}
+                {/*  onChange={handleOnChangeRange}*/}
+                {/*  customInput={*/}
+                {/*    <CustomInput*/}
+                {/*      dates={dates}*/}
+                {/*      setDates={setDates}*/}
+                {/*      label='Date'*/}
+                {/*      end={endDateRange}*/}
+                {/*      start={startDateRange}*/}
+                {/*    />*/}
+                {/*  }*/}
+                {/*/>*/}
               </Grid>
             </Grid>
           </CardContent>

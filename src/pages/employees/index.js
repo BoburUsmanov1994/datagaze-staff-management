@@ -49,7 +49,7 @@ const defaultColumns = [
     field: 'id',
     minWidth: 80,
     headerName: '#',
-    renderCell: ({row}) => <StyledLink href={`/apps/invoice/preview/${row.id}`}>{`#${row.id}`}</StyledLink>
+    renderCell: ({row}) => <StyledLink href={`/employees/${row.id}`}>{`#${row.id}`}</StyledLink>
   },
   {
     flex: 0.1,

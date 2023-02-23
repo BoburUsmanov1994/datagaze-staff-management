@@ -15,4 +15,5 @@ export const KEYS = {
   attandances: 'attandances',
   hikvision: 'hikvision',
   employeeType: 'employeeType',
+  hikvisionLogs: 'hikvisionLogs',
 }
