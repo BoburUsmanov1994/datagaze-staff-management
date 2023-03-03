@@ -206,7 +206,7 @@ const CreateForm = props => {
       variant='temporary'
       onClose={handleClose}
       ModalProps={{keepMounted: true}}
-      sx={{'& .MuiDrawer-paper': {width: {xs: 300, sm: 400}}}}
+      sx={{'& .MuiDrawer-paper': {width: {xs: 300, sm: 450}}}}
     >
       {(isLoadingPost || isLoadingDocTypes || isLoadingCompany || isLoadingEmployee || isLoadingPostEmployee || isLoadingEmployeeType || isLoadingDevice || isLoadingPostDevice) &&
       <div style={{

@@ -99,6 +99,9 @@ const EmployeeList = () => {
         lastName: {
           $startsWith: search
         }
+      },
+      pagination: {
+        pageSize: 100
       }
     }
   })

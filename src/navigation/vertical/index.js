@@ -30,6 +30,11 @@ const navigation = () => {
       icon: 'mdi:visibility',
       path: '/hikvision'
     },
+    {
+      title: 'Productivity',
+      icon: 'mdi:percent',
+      path: '/productivity'
+    },
     // {
     //   title: 'Reports',
     //   icon: 'mdi:file-document-outline',

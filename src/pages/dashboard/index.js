@@ -24,11 +24,91 @@ import CrmProjectTimeline from 'src/views/dashboards/crm/CrmProjectTimeline'
 import CrmMeetingSchedule from 'src/views/dashboards/crm/CrmMeetingSchedule'
 import CrmSocialNetworkVisits from 'src/views/dashboards/crm/CrmSocialNetworkVisits'
 import CrmMostSalesInCountries from 'src/views/dashboards/crm/CrmMostSalesInCountries'
+import CardHeader from "@mui/material/CardHeader";
+import CardContent from "@mui/material/CardContent";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import {get} from "lodash";
+import MenuItem from "@mui/material/MenuItem";
+import Card from "@mui/material/Card";
+import DatePicker from "react-datepicker";
+import {useState,forwardRef} from "react";
+import format from "date-fns/format";
+import {TextField} from "@mui/material";
+import DatePickerWrapper from "../../@core/styles/libs/react-datepicker";
 
+const CustomInput = forwardRef((props, ref) => {
+  const startDate = props.start !== null ? format(props.start, 'MM/dd/yyyy') : ''
+  const endDate = props.end !== null ? ` - ${format(props.end, 'MM/dd/yyyy')}` : null
+  const value = `${startDate}${endDate !== null ? endDate : ''}`
+  props.start === null && props.dates.length && props.setDates ? props.setDates([]) : null
+  const updatedProps = { ...props }
+  delete updatedProps.setDates
+  return <TextField fullWidth inputRef={ref} {...updatedProps} label={props.label || ''} value={value} />
+})
 const Dashboard = () => {
+  const [endDateRange, setEndDateRange] = useState(null)
+  const [startDateRange, setStartDateRange] = useState(null)
+  const [dates, setDates] = useState([])
+  const handleOnChangeRange = dates => {
+    const [start, end] = dates
+    if (start !== null && end !== null) {
+      setDates(dates)
+    }
+    setStartDateRange(start)
+    setEndDateRange(end)
+  }
   return (
     <ApexChartWrapper>
+      <DatePickerWrapper>
       <Grid container spacing={6} className='match-height'>
+        <Grid item xs={12}>
+          <Card>
+            <CardHeader title='Dashboard'/>
+            <CardContent>
+              <Grid container spacing={6}>
+                <Grid item xs={12} sm={6}>
+                  <DatePicker
+                    isClearable
+                    selectsRange
+                    monthsShown={2}
+                    endDate={endDateRange}
+                    selected={startDateRange}
+                    startDate={startDateRange}
+                    shouldCloseOnSelect={false}
+                    id='date-range-picker-months'
+                    onChange={handleOnChangeRange}
+                    customInput={
+                      <CustomInput
+                        dates={dates}
+                        setDates={setDates}
+                        label='Date'
+                        end={endDateRange}
+                        start={startDateRange}
+                      />
+                    }
+                  />
+                </Grid>
+                <Grid item xs={4} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel id='office-status-select'>Departments</InputLabel>
+                    <Select
+                      fullWidth
+                      value={''}
+                      sx={{mr: 4, mb: 2}}
+                      label='Select office'
+                      onChange={(e) => console.log(e)}
+                      labelId='office-status-select'
+                    >
+                      <MenuItem value=''>none</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
         <Grid item xs={12} md={4}>
           <CrmAward />
         </Grid>
@@ -89,6 +169,7 @@ const Dashboard = () => {
           <CrmTable />
         </Grid>
       </Grid>
+      </DatePickerWrapper>
     </ApexChartWrapper>
   )
 }
