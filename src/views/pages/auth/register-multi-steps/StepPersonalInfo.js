@@ -29,24 +29,20 @@ const StepPersonalDetails = ({handleNext, handlePrev}) => {
   const {data: companyData, isLoading: isLoadingCompanyData} = useGetOneQuery({
       id: get(router.query, 'companyId'),
       key: KEYS.company, url: URLS.company, params: {
-        params: {
-          populate: '*'
-        },
-        headers: {
-          Authorization: `Bearer ${get(router.query, 'token')}`
-        }
+        populate: '*'
+      },
+      headers: {
+        Authorization: `Bearer ${get(router.query, 'token')}`
       },
       enabled: !!(get(router.query, 'token') && get(router.query, 'companyId'))
     }
   )
   const {data: companyCategory, isLoading: isLoadingCompanyCategory} = useGetAllQuery({
       key: KEYS.companyCategory, url: URLS.companyCategory, params: {
-        params: {
-          populate: '*'
-        },
-        headers: {
-          Authorization: `Bearer ${get(router.query, 'token')}`
-        }
+        populate: '*'
+      },
+      headers: {
+        Authorization: `Bearer ${get(router.query, 'token')}`
       },
       enabled: !!(get(router.query, 'token'))
     }
@@ -54,12 +50,10 @@ const StepPersonalDetails = ({handleNext, handlePrev}) => {
 
   const {data: country, isLoading: isLoadingCountry} = useGetAllQuery({
       key: KEYS.country, url: URLS.country, params: {
-        params: {
-          populate: '*'
-        },
-        headers: {
-          Authorization: `Bearer ${get(router.query, 'token')}`
-        }
+        populate: '*'
+      },
+      headers: {
+        Authorization: `Bearer ${get(router.query, 'token')}`
       },
       enabled: !!(get(router.query, 'token'))
     }

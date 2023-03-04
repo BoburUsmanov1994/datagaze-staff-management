@@ -18,4 +18,7 @@ export const KEYS = {
   hikvisionLogs: 'hikvisionLogs',
   productivity: 'productivity',
   uploadEmployeeImg: 'uploadEmployeeImg',
+  agents: 'agents',
+  agentlogs: 'agentlogs',
+  agentsessions: 'agentsessions',
 }

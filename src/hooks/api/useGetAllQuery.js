@@ -9,10 +9,12 @@ const useGetAllQuery = ({
                           params = {},
                           hideErrorMsg = false,
                           enabled = true,
+                          headers = {}
                         }) => {
 
   const {isLoading, isError, data, error, isFetching} = useQuery([key, params], () => request.get(url, {
-    params
+    params,
+    headers
   }), {
     onSuccess: () => {
     },

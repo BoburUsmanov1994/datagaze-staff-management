@@ -57,7 +57,7 @@ const defaultColumns = [
 
 
 /* eslint-enable */
-const SubscribeTypeList = () => {
+const AgentSessionsList = () => {
   // ** State
   const [pageSize, setPageSize] = useState(10)
   const [id, setId] = useState(null);
@@ -66,7 +66,7 @@ const SubscribeTypeList = () => {
   const [search, setSearch] = useState('')
 
   const {data, isLoading} = useGetAllQuery({
-    key: KEYS.subscription, url: URLS.subscription, params: {
+    key: KEYS.agentsessions, url: URLS.agentsessions, params: {
       populate: '*',
       filters: {
         name: {
@@ -79,7 +79,7 @@ const SubscribeTypeList = () => {
     }
   })
 
-  const {mutate: deleteRequest, isLoading: deleteLoading} = useDeleteQuery({listKeyId: KEYS.subscription})
+  const {mutate: deleteRequest, isLoading: deleteLoading} = useDeleteQuery({listKeyId: KEYS.agentsessions})
 
 
   const columns = [
@@ -109,7 +109,7 @@ const SubscribeTypeList = () => {
 
   const deleteItem = (id) => {
     deleteRequest({
-      url: `${URLS.subscription}/${id}`
+      url: `${URLS.agentsessions}/${id}`
     })
   }
 
@@ -141,7 +141,7 @@ const SubscribeTypeList = () => {
             </Box>
           </div>}
           <Card>
-            <CardHeader title='Subscribe type list'/>
+            <CardHeader title='Agent logs list'/>
           </Card>
         </Grid>
         <Grid item xs={12}>
@@ -168,4 +168,4 @@ const SubscribeTypeList = () => {
   )
 }
 
-export default SubscribeTypeList;
+export default AgentSessionsList;

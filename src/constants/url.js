@@ -19,4 +19,7 @@ export const URLS = {
   hikvisionLogs: '/api/hikvision/event/logs',
   productivity: '/api/productivity-categories',
   uploadEmployeeImg: '/api/employee/face/upload',
+  agents: '/api/agents',
+  agentlogs: '/api/agentlogs',
+  agentsessions: '/api/agentsessions',
 }

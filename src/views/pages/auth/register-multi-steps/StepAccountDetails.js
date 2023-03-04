@@ -33,12 +33,10 @@ const StepAccountDetails = ({handleNext}) => {
 
   const {data: userData, isLoading: isLoadingUserData} = useGetAllQuery({
       key: KEYS.getMe, url: URLS.getMe, params: {
-        params: {
-          populate: '*'
-        },
-        headers: {
-          Authorization: `Bearer ${get(router.query, 'token')}`
-        }
+        populate: '*'
+      },
+      headers: {
+        Authorization: `Bearer ${get(router.query, 'token')}`
       },
       enabled: !!(get(router.query, 'token'))
     }
@@ -52,7 +50,7 @@ const StepAccountDetails = ({handleNext}) => {
     repeat_password: ''
   }
 
-  const schema =  yup.object().shape({
+  const schema = yup.object().shape({
     password: yup.string().min(5).required(),
     repeat_password: yup.string().min(5).required(),
     username: yup.string().min(3).required(),
@@ -72,7 +70,7 @@ const StepAccountDetails = ({handleNext}) => {
   })
 
   const onSubmit = ({password, repeat_password, ...data}) => {
-    if(get(userData,'data')){
+    if (get(userData, 'data')) {
       handleNext()
     }
     if (!isEqual(password, repeat_password)) {
@@ -81,7 +79,7 @@ const StepAccountDetails = ({handleNext}) => {
         message: 'Passwords didnt match'
       })
     } else {
-      register({url: URLS.register, attributes: {...data, password,role:3}}, {
+      register({url: URLS.register, attributes: {...data, password, role: 3}}, {
         onSuccess: ({data}) => {
           handleNext()
           router.replace({

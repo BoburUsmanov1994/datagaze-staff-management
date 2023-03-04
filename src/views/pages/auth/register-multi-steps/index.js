@@ -39,8 +39,6 @@ const RegisterMultiSteps = () => {
   // ** States
   const [activeStep, setActiveStep] = useState(0)
   const router = useRouter()
-  console.log(router.query)
-  // Handle Stepper
   const handleNext = () => {
     setActiveStep(activeStep + 1)
   }
