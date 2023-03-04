@@ -25,9 +25,10 @@ import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 import {useGetAllQuery} from "../../hooks/api";
 import {KEYS} from "../../constants/key";
 import {URLS} from "../../constants/url";
-import {get} from "lodash";
+import {get,head,last} from "lodash";
 import FallbackSpinner from "../../@core/components/spinner";
 import dayjs from "dayjs";
+import TableCollapsible from "../../views/table/mui/TableCollapsible";
 
 // ** Styled component for the link in the dataTable
 const StyledLink = styled(Link)(({theme}) => ({
@@ -39,38 +40,24 @@ const StyledLink = styled(Link)(({theme}) => ({
 const defaultColumns = [
   {
     flex: 0.1,
-    field: 'id',
-    minWidth: 80,
-    headerName: '#',
-    renderCell: ({row}) => <StyledLink href={`/apps/invoice/preview/${row.id}`}>{`#${row.id}`}</StyledLink>
-  },
-  {
-    flex: 0.1,
-    minWidth: 90,
-    field: 'company',
-    headerName: 'Company',
-    renderCell: ({row}) => get(row, 'company.name', '-')
-  },
-  {
-    flex: 0.1,
     minWidth: 90,
     field: 'employee',
     headerName: 'Employee',
-    renderCell: ({row}) => get(row, 'employee.hostname', '-')
+    renderCell: ({row}) => get(row, 'employee.first_name', '-')
   },
   {
     flex: 0.15,
     minWidth: 125,
     field: 'check_in',
     headerName: 'Check in',
-    renderCell: ({row}) => dayjs(row.check_in).format("DD-MM-YYYY HH:mm")
+    renderCell: ({row}) => dayjs(get(head(get(row,'events',[])),'time')).format("DD-MM-YYYY HH:mm")
   },
   {
     flex: 0.15,
     minWidth: 125,
     field: 'check_out',
     headerName: 'Check out',
-    renderCell: ({row}) => dayjs(row.check_out).format("DD-MM-YYYY HH:mm")
+    renderCell: ({row}) => dayjs(get(last(get(row,'events',[])),'time')).format("DD-MM-YYYY HH:mm")
   },
 ]
 
@@ -123,6 +110,7 @@ const AttendanceList = () => {
     return <FallbackSpinner/>;
   }
 
+  console.log('datadata',data)
   return (
     <DatePickerWrapper>
       <Grid container spacing={6}>
@@ -177,18 +165,21 @@ const AttendanceList = () => {
         <Grid item xs={12}>
           <Card>
             <TableHeader value={''} selectedRows={selectedRows} handleFilter={handleFilter}/>
-            <DataGrid
-              autoHeight
-              pagination
-              rows={get(data, 'data.results', [])}
-              columns={columns}
-              checkboxSelection
-              disableSelectionOnClick
-              pageSize={Number(pageSize)}
-              rowsPerPageOptions={[10, 25, 50]}
-              onSelectionModelChange={rows => setSelectedRows(rows)}
-              onPageSizeChange={newPageSize => setPageSize(newPageSize)}
-            />
+            <TableCollapsible data={get(data, 'data', [])} />
+            {/*<DataGrid*/}
+            {/*  treeData*/}
+            {/*  getRowId={(row)=>get(row,'employee.id')}*/}
+            {/*  autoHeight*/}
+            {/*  pagination*/}
+            {/*  rows={get(data, 'data', [])}*/}
+            {/*  columns={columns}*/}
+            {/*  checkboxSelection*/}
+            {/*  disableSelectionOnClick*/}
+            {/*  pageSize={Number(pageSize)}*/}
+            {/*  rowsPerPageOptions={[10, 25, 50]}*/}
+            {/*  onSelectionModelChange={rows => setSelectedRows(rows)}*/}
+            {/*  onPageSizeChange={newPageSize => setPageSize(newPageSize)}*/}
+            {/*/>*/}
           </Card>
         </Grid>
       </Grid>
