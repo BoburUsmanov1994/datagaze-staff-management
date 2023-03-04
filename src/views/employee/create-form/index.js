@@ -1,4 +1,4 @@
-// ** MUI Imports
+import {useState} from "react";
 import Drawer from '@mui/material/Drawer'
 import Button from '@mui/material/Button'
 import {styled} from '@mui/material/styles'
@@ -19,10 +19,17 @@ import Icon from 'src/@core/components/icon'
 
 
 import 'cleave.js/dist/addons/cleave-phone.us'
-import {usePostQuery} from "../../../hooks/api";
+import {useGetAllQuery, usePostQuery} from "../../../hooks/api";
 import {KEYS} from "../../../constants/key";
 import {URLS} from "../../../constants/url";
 import CircularProgress from "@mui/material/CircularProgress";
+import {useDropzone} from 'react-dropzone'
+import Link from "next/link";
+import toast from "react-hot-toast";
+import {get,forEach} from "lodash"
+import DatePickerWrapper from "../../../@core/styles/libs/react-datepicker";
+import DatePicker from "react-datepicker";
+import PickersCustomInput from "../../forms/form-elements/pickers/PickersCustomInput";
 
 
 const Header = styled(Box)(({theme}) => ({
@@ -43,14 +50,71 @@ const defaultValues = {
   lastName: '',
 }
 
-const CreateForm = props => {
 
+const CreateForm = props => {
+  const [files, setFiles] = useState([])
+  const [filePath, setFilePath] = useState(null);
+  const [startDate, setStartDate] = useState(new Date())
+  const [expireDateTime, setExpireDateTime] = useState(new Date())
   const {open, toggle} = props
+
+  const {data: devices, isLoading: isLoadingDevice} = useGetAllQuery({
+      key: KEYS.hikvision, url: URLS.hikvision, params: {
+        params: {
+          populate: '*'
+        },
+      },
+    }
+  )
 
   const {mutate: create, isLoading: isLoadingPost} = usePostQuery({
     listKeyId: KEYS.employee,
     hideSuccessToast: true
   })
+
+  const {mutate: uploadRequest, isLoading: isLoadingUpload} = usePostQuery({
+    listKeyId: KEYS.uploadEmployeeImg,
+    hideSuccessToast: true
+  })
+
+  const {mutate: createDevice, isLoading: isLoadingPostDevice} = usePostQuery({
+    listKeyId: KEYS.employee,
+    hideSuccessToast: true
+  })
+
+
+  // ** Hook
+  const {getRootProps, getInputProps} = useDropzone({
+    multiple: false,
+    accept: {
+      'image/*': ['.png', '.jpg', '.jpeg', '.gif']
+    },
+    onDrop: acceptedFiles => {
+      setFiles(acceptedFiles.map(file => Object.assign(file)))
+      const formData = new FormData();
+      formData.append('face', acceptedFiles[0]);
+      uploadRequest({
+          url: URLS.uploadEmployeeImg,
+          attributes: formData
+        },
+        {
+          onSuccess: ({data: response}) => {
+            setFilePath(get(response, 'url'))
+            toast.success('File uploaded')
+          }
+        }
+      )
+    }
+  })
+
+  const handleLinkClick = event => {
+    event.preventDefault()
+  }
+
+  const img = files.map(file => (
+    <img style={{height: 75, objectFit: 'cover', display: 'inline-block'}} key={file.name} alt={file.name}
+         className='single-file-image' src={URL.createObjectURL(file)}/>
+  ))
 
 
   const {
@@ -69,17 +133,32 @@ const CreateForm = props => {
       url: URLS.employee,
       attributes: {
         data: {
-          ...data
+          ...data,
+          face: filePath
         }
       },
     }, {
-      onSuccess: ({data}) => {
-        toggle()
-        reset()
+      onSuccess: ({data: {data: {id}}}) => {
+        forEach(get(devices, 'data.results', []), (item) => {
+          createDevice({
+              url: URLS.assignHikvision,
+              attributes: {
+                employeeId: id,
+                hikvisionId: get(item, 'id'),
+                beginTime: startDate,
+                endTime: expireDateTime,
+              }
+            },
+            {
+              onError: () => {
+                toast.error('Error')
+              }
+            })
+        })
+        handleClose()
       },
       onError: (e) => {
-        toggle()
-        reset()
+        handleClose()
       }
     })
   }
@@ -88,6 +167,8 @@ const CreateForm = props => {
     toggle()
     reset()
   }
+
+  console.log('devices', devices)
 
   return (
     <Drawer
@@ -98,7 +179,7 @@ const CreateForm = props => {
       ModalProps={{keepMounted: true}}
       sx={{'& .MuiDrawer-paper': {width: {xs: 300, sm: 400}}}}
     >
-      {(isLoadingPost) && <div style={{
+      {(isLoadingPost || isLoadingUpload || isLoadingPostDevice || isLoadingDevice) && <div style={{
         position: 'absolute',
         zIndex: '9999',
         top: '50%',
@@ -123,6 +204,29 @@ const CreateForm = props => {
         </IconButton>
       </Header>
       <Box sx={{p: 5}}>
+        <Box {...getRootProps({className: 'dropzone'})} sx={files.length ? {height: 100} : {}}>
+          <input {...getInputProps()} />
+          {files.length ? (
+            img
+          ) : (
+            <Box style={{marginBottom: '15px'}} sx={{
+              display: 'flex',
+              flexDirection: ['column', 'column', 'row'],
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Box sx={{display: 'flex', flexDirection: 'column', textAlign: ['center', 'center', 'inherit']}}>
+                <Typography color='textSecondary'>
+                  Drop files here or click{' '}
+                  <Link href='/' onClick={handleLinkClick}>
+                    browse
+                  </Link>{' '}
+                  thorough your machine
+                </Typography>
+              </Box>
+            </Box>
+          )}
+        </Box>
         <form onSubmit={handleSubmit(onSubmit)}>
           <FormControl fullWidth sx={{mb: 6}}>
             <Controller
@@ -158,6 +262,36 @@ const CreateForm = props => {
             />
             {errors.lastName && <FormHelperText sx={{color: 'error.main'}}>{errors.lastName.message}</FormHelperText>}
           </FormControl>
+          <DatePickerWrapper sx={{mb: 6}}>
+            <DatePicker
+              showTimeSelect
+              timeFormat='HH:mm'
+              timeIntervals={15}
+              selected={startDate}
+              id='date-time-picker'
+              dateFormat='MM/dd/yyyy h:mm aa'
+              popperPlacement={'bottom-end'}
+              onChange={date => setStartDate(date)}
+              customInput={<PickersCustomInput label='Check in time'/>
+              }
+            />
+          </DatePickerWrapper>
+
+
+          <DatePickerWrapper sx={{mb: 6}}>
+            <DatePicker
+              showTimeSelect
+              timeFormat='HH:mm'
+              timeIntervals={15}
+              selected={expireDateTime}
+              id='date-time-picker'
+              dateFormat='MM/dd/yyyy h:mm aa'
+              popperPlacement={'bottom-end'}
+              onChange={date => setExpireDateTime(date)}
+              customInput={<PickersCustomInput label='Expire date'/>
+              }
+            />
+          </DatePickerWrapper>
 
 
           <Box sx={{display: 'flex', alignItems: 'center'}}>

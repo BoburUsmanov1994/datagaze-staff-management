@@ -26,35 +26,59 @@ const navigation = () => {
       path: '/guest-permit'
     },
     {
-      title: 'Hikvision',
+      title: 'Device',
       icon: 'mdi:visibility',
-      path: '/hikvision'
+      children: [
+        {
+          title: 'Hikvision',
+          path: '/hikvision'
+        },
+      ]
     },
     {
-      title: 'Productivity',
-      icon: 'mdi:percent',
-      path: '/productivity'
+      title: 'Company settings',
+      icon: 'mdi:cog-outline',
+      children: [
+        {
+          title: 'Country',
+          path: '/country'
+        },
+        {
+          title: 'Company category',
+          path: '/company-category'
+        },
+        {
+          title: 'Company',
+          path: '/company'
+        },
+        {
+          title: 'Subscribe type',
+          path: '/subscribe-type'
+        },
+      ]
     },
-    // {
-    //   title: 'Reports',
-    //   icon: 'mdi:file-document-outline',
-    //   children: [
-    //     {
-    //       title: 'Reports',
-    //       path: '/reports'
-    //     },
-    //   ]
-    // },
-    // {
-    //   title: 'Settings',
-    //   icon: 'mdi:cog-outline',
-    //   children: [
-    //     {
-    //       title: 'Settings',
-    //       path: '/settings'
-    //     },
-    //   ]
-    // },
+    {
+      title: 'Agent settings',
+      icon: 'mdi:cog-outline',
+      children: [
+        {
+          title: 'Agents',
+          path: '/agents'
+        },
+        {
+          title: 'Agent logs',
+          path: '/agent-logs'
+        },
+        {
+          title: 'Agent sessions',
+          path: '/agent-sessions'
+        },
+        {
+          title: 'Productivity category',
+          path: '/productivity'
+        },
+      ]
+    },
     // {
     //   title: 'Chat',
     //   icon: 'mdi:message-outline',

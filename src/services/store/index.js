@@ -15,7 +15,7 @@ let settingsStore = (set) => ({
     token: null,
     darkMode: false,
     isMenuOpen: true,
-    lang: storage.get('lang') || "en",
+    lang: "en",
     setToken: (token) => set(state => ({...state, token})),
     setLang: (lang) => set(state => ({...state, lang})),
     setMode: () => set(state => ({...state, darkMode: !state.darkMode})),

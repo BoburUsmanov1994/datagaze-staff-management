@@ -18,4 +18,5 @@ export const URLS = {
   assignHikvision: '/api/hikvision/user/create',
   hikvisionLogs: '/api/hikvision/event/logs',
   productivity: '/api/productivity-categories',
+  uploadEmployeeImg: '/api/employee/face/upload',
 }

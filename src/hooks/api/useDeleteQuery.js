@@ -1,7 +1,7 @@
 import React from 'react';
 import {useMutation, useQueryClient} from 'react-query'
 import {request} from "../../services/api";
-import {toast} from "react-toastify";
+import toast from "react-hot-toast";
 
 const deleteRequest = (url) => request.delete(url);
 
@@ -23,7 +23,7 @@ const useDeleteQuery = ({listKeyId = null}) => {
                     }
                 },
                 onError: (data) => {
-                    toast.error(data?.response?.data?.message || 'ERROR')
+                    toast.error(data?.response?.data?.error?.message || 'ERROR')
                 }
             }
         );

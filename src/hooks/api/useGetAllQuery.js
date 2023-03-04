@@ -1,7 +1,7 @@
 import React from 'react';
 import {useQuery} from 'react-query'
 import {request} from "../../services/api";
-import {toast} from "react-toastify";
+import toast from "react-hot-toast";
 
 const useGetAllQuery = ({
                           key = "get-all",
@@ -18,7 +18,7 @@ const useGetAllQuery = ({
     },
     onError: (data) => {
       if (!hideErrorMsg) {
-        toast.error(data?.response?.data?.message || `ERROR!!! ${url} api not working`)
+        toast.error(data?.response?.data?.error?.message || `ERROR!!! ${url} api not working`)
       }
     },
     enabled

@@ -1,5 +1,5 @@
 // ** Toolkit imports
-import { configureStore } from '@reduxjs/toolkit'
+import {configureStore} from '@reduxjs/toolkit'
 
 // ** Reducers
 import chat from 'src/store/apps/chat'

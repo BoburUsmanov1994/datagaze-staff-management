@@ -17,4 +17,5 @@ export const KEYS = {
   employeeType: 'employeeType',
   hikvisionLogs: 'hikvisionLogs',
   productivity: 'productivity',
+  uploadEmployeeImg: 'uploadEmployeeImg',
 }

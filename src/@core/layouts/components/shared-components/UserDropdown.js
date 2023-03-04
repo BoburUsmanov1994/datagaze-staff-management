@@ -3,6 +3,7 @@ import { useState, Fragment } from 'react'
 
 // ** Next Import
 import { useRouter } from 'next/router'
+import {get} from "lodash"
 
 // ** MUI Imports
 import Box from '@mui/material/Box'
@@ -19,6 +20,7 @@ import Icon from 'src/@core/components/icon'
 
 // ** Context
 import { useAuth } from 'src/hooks/useAuth'
+import {useStore} from "../../../../services/store";
 
 // ** Styled Components
 const BadgeContentSpan = styled('span')(({ theme }) => ({
@@ -32,6 +34,7 @@ const BadgeContentSpan = styled('span')(({ theme }) => ({
 const UserDropdown = props => {
   // ** Props
   const { settings } = props
+  const userData = useStore(state =>get(state,'user',{}))
 
   // ** States
   const [anchorEl, setAnchorEl] = useState(null)
@@ -73,6 +76,7 @@ const UserDropdown = props => {
     logout()
     handleDropdownClose()
   }
+  console.log('userData',userData)
 
   return (
     <Fragment>
@@ -114,7 +118,7 @@ const UserDropdown = props => {
               <Avatar alt='John Doe' src='/images/avatars/1.png' sx={{ width: '2.5rem', height: '2.5rem' }} />
             </Badge>
             <Box sx={{ display: 'flex', ml: 3, alignItems: 'flex-start', flexDirection: 'column' }}>
-              <Typography sx={{ fontWeight: 600 }}>John Doe</Typography>
+              <Typography sx={{ fontWeight: 600 }}>Admin</Typography>
               <Typography variant='body2' sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>
                 Admin
               </Typography>
