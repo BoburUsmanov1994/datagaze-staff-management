@@ -75,6 +75,7 @@ const AttendanceList = () => {
   const {data, isLoading} = useGetAllQuery({
     key: KEYS.attandances, url: URLS.attandances, params: {
       populate: '*',
+      date:'2023-03-11',
       filters: {
         company: {
           id: {

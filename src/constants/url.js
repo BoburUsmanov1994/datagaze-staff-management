@@ -23,4 +23,6 @@ export const URLS = {
   agents: '/api/agents',
   agentlogs: '/api/agentlogs',
   agentsessions: '/api/agentsessions',
+  assignCard: '/api/employee/card/assign',
+  setFaceImg: '/api/hikvision/user/face',
 }

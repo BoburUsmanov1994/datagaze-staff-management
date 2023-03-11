@@ -82,6 +82,11 @@ const CreateForm = props => {
     hideSuccessToast: true
   })
 
+  const {mutate: setFaceImgRequest, isLoading: isLoadingFaceImg} = usePostQuery({
+    listKeyId: KEYS.setFaceImg,
+    hideSuccessToast: true
+  })
+
 
   // ** Hook
   const {getRootProps, getInputProps} = useDropzone({
@@ -139,22 +144,13 @@ const CreateForm = props => {
       },
     }, {
       onSuccess: ({data: {data: {id}}}) => {
-        forEach(get(devices, 'data.results', []), (item) => {
-          createDevice({
-              url: URLS.assignHikvision,
-              attributes: {
-                employeeId: id,
-                hikvisionId: get(item, 'id'),
-                beginTime: startDate,
-                endTime: expireDateTime,
-              }
-            },
-            {
-              onError: () => {
-                toast.error('Error')
-              }
-            })
+        setFaceImgRequest({
+          url:`${URLS.setFaceImg}/${id}`,
+          attributes:{
+            image:filePath
+          }
         })
+    
         handleClose()
       },
       onError: (e) => {
@@ -168,7 +164,7 @@ const CreateForm = props => {
     reset()
   }
 
-  console.log('devices', devices)
+  
 
   return (
     <Drawer
@@ -179,7 +175,7 @@ const CreateForm = props => {
       ModalProps={{keepMounted: true}}
       sx={{'& .MuiDrawer-paper': {width: {xs: 300, sm: 400}}}}
     >
-      {(isLoadingPost || isLoadingUpload || isLoadingPostDevice || isLoadingDevice) && <div style={{
+      {(isLoadingPost || isLoadingUpload || isLoadingPostDevice || isLoadingDevice || isLoadingFaceImg) && <div style={{
         position: 'absolute',
         zIndex: '9999',
         top: '50%',

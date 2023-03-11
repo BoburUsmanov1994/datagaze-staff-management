@@ -21,4 +21,6 @@ export const KEYS = {
   agents: 'agents',
   agentlogs: 'agentlogs',
   agentsessions: 'agentsessions',
+  setFaceImg: 'setFaceImg',
+  assignCard: 'assignCard',
 }

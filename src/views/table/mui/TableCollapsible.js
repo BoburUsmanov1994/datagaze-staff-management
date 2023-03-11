@@ -16,7 +16,7 @@ import TableContainer from '@mui/material/TableContainer'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
-import {get, head, last} from "lodash"
+import {get, head, last,filter,isEqual,orderBy} from "lodash"
 import dayjs from "dayjs";
 
 const createData = (name, calories, fat, carbs, protein, price) => {
@@ -49,6 +49,10 @@ const Row = props => {
   // ** State
   const [open, setOpen] = useState(false)
 
+  const filterEventList = (events=[],name='Kirish',direction='asc') => {
+      return orderBy(filter(events,(_event)=>isEqual(get(_event,'hikvision.name'),'Kirish')),['time'],[direction]) || [];
+  }
+
   return (
     <Fragment>
       <TableRow sx={{'& > *': {borderBottom: 'unset'}}}>
@@ -60,9 +64,9 @@ const Row = props => {
         <TableCell component='th' scope='row'>
           {get(row, 'employee.first_name')}
         </TableCell>
-        <TableCell>{dayjs(get(head(get(row, 'events', [])), 'time')).format("DD-MM-YYYY HH:mm")}</TableCell>
+        <TableCell>{dayjs(get(head(filterEventList(get(row, 'events', []))), 'time')).format("DD-MM-YYYY HH:mm")}</TableCell>
         <TableCell
-          align={'right'}>{dayjs(get(last(get(row, 'events', [])), 'time')).format("DD-MM-YYYY HH:mm")}</TableCell>
+          align={'right'}>{dayjs(get(last(filterEventList(get(row, 'events', []),'Chiqish')), 'time')).format("DD-MM-YYYY HH:mm")}</TableCell>
       </TableRow>
       <TableRow>
         <TableCell colSpan={6} sx={{py: '0 !important'}}>
@@ -84,7 +88,7 @@ const Row = props => {
                       <TableCell component='th' scope='row'>
                         {get(event, 'date')}
                       </TableCell>
-                      <TableCell>{dayjs(get(event, 'time')).format("DD-MM-YYYY HH:mm")}</TableCell>
+                      <TableCell>{dayjs(get(event, 'time')).format("DD-MM-YYYY HH:mm")} ({get(event, 'hikvision.name')})</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -111,8 +115,8 @@ const TableCollapsible = ({data = []}) => {
           <TableRow>
             <TableCell/>
             <TableCell>Employee</TableCell>
-            <TableCell>Check in</TableCell>
-            <TableCell align='right'>Check out</TableCell>
+            <TableCell>Kirish</TableCell>
+            <TableCell align='right'>Chiqish</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
