@@ -144,12 +144,24 @@ const CreateForm = props => {
       },
     }, {
       onSuccess: ({data: {data: {id}}}) => {
-        setFaceImgRequest({
-          url:`${URLS.setFaceImg}/${id}`,
+        createDevice({
+          url:URLS.assignHikvision,
           attributes:{
-            image:filePath
+            employeeId:id,
+            beginTime:startDate,
+            endTime:expireDateTime,
+          }
+        },{
+          onSuccess:()=>{
+            setFaceImgRequest({
+              url:`${URLS.setFaceImg}/${id}`,
+              attributes:{
+                image:filePath
+              }
+            })
           }
         })
+  
     
         handleClose()
       },
